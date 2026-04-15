@@ -1,9 +1,9 @@
 # Memory_Fragmentation_Visuliser_in_C
 A simple code to visualise **Memory Fragmentation** (both internal and external) for the following Memory allocation algorithms: 
-  **1. first fit
-  2. best fit
-  3. worst fit
-  4. paging**
+  1. **first fit**
+  2. **best fit**
+  3. **worst fit**
+  4. **paging**
 
 ## Compilation:
 ```c
@@ -12,6 +12,25 @@ A simple code to visualise **Memory Fragmentation** (both internal and external)
   gcc obj/BST.o src/best_fit.c  -Ilib -o bin/best_fit
   gcc obj/BST.o src/worst_fit.c -Ilib -o bin/worst_fit
   gcc obj/BST.o src/paging.c    -Ilib -o bin/paging
+```
+## Ececution:
+#### External Fragmentation:
+##### for visulising first fit memory allocation allocation algorithm
+```c
+  bin/first_fit
+```
+##### for visulising best fit memory allocation allocation algorithm
+```c
+  bin/best_fit
+```
+##### for visulising worst fit memory allocation allocation algorithm
+```c
+  bin/worst_fit
+```
+#### Internal Fragmentation:
+##### for visulising paging memory allocation allocation algorithm
+```c
+  bin/paging
 ```
 ## Folder Description:
 #### lib
