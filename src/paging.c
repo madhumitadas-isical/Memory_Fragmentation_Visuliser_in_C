@@ -1,3 +1,10 @@
+/*
+OS project Memory Fragmentation Visuliser:
+Algorithm: Paging
+Author:
+    1. Suman Polley CS2535
+    2. Madumita Das CS2515
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,7 +16,7 @@
 #define MAX_FREE_LOCATIONS 100
 #define MAX_MEMORY_LENGTH 128
 #define MAX_MEMORY_WIDTH 16
-#define FRAMESIZE 4
+#define FRAMESIZE 4     // framesize taken as 4MB for visualixazation puspose can be modified to any number preferably power of 2
 #define ANSI_COLOR_GREEN "\x1b[32m"
 #define ANSI_COLOR_RED "\x1b[31m"
 #define ANSI_COLOR_MAGENTA "\x1b[35m"
@@ -47,7 +54,6 @@ typedef struct {
 
 int comparePID(void* p1, void* p2)
 {
-    /* TODO */
     PROCESS* process1 = (PROCESS*)p1;
     PROCESS* process2 = (PROCESS*)p2;
     if(process1->PID > process2->PID) return 1;
@@ -118,18 +124,7 @@ int DeAllocateFrames(PAGETABLE page_table)
     free(page_table.table);
     return 1;
 }
-/*
-void AlloacteMemory(PAGETABLE page_table)
-{
-    for(int i=0;i<page_table.no_of_entries;i++)
-    {
-        for(int j =0;j<page_table.table[i].occupied;j++)
-        {
-            MEMORY[page_table.table[j].frame_no][j] = 1;
-        }
-    }
-}
-*/
+
 void AlloacteMemory(PAGETABLE page_table, int PID)
 {
     for (int i = 0; i < page_table.no_of_entries; i++)
@@ -207,7 +202,6 @@ int AllocatePID(BST* processes, int PID, int size)
 int DeAllocatePID(BST* processes, int PID)
 {
     PROCESS process;
-    //PAGETABLE page_table;
 
     process.PID = PID;
     // search for the PID in processes list to get the start position in memory

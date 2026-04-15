@@ -1,3 +1,10 @@
+/*
+OS project Memory Fragmentation Visuliser:
+Algorithm: First Fit
+Author:
+    1. Suman Polley CS2535
+    2. Madumita Das CS2515
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,30 +24,31 @@
 #define ANSI_COLOR_YELLOW  "\x1b[33m"
 #define ANSI_COLOR_RESET "\x1b[0m"
 
+
+int MEMORY[MAX_MEMORY_WIDTH][MAX_MEMORY_LENGTH];            // actual Memory in 2D
+int PROCESSBSTROOT = -1;                                    // root the bst containing processes
+int FREEMEMBSTROOT = -1;                                    // root the bst containing free memeory blocks
+int FREEMEMSIZEBSTROOT = -1;                                // root the bst containing free memeory blocks ordered by size
+int TOTALMEM = MAX_MEMORY_LENGTH * MAX_MEMORY_WIDTH;        // Total Memory size
+int LARGESTFREEBLOCK = MAX_MEMORY_LENGTH * MAX_MEMORY_WIDTH;// Largest free memory block size
+int ALLOCATEDMEM = 0;                                       // Total Allocated memory size
+
+
 typedef struct {
     int PID;
     int start;
     int size;
-} PROCESS;
+} PROCESS;          // process data type
 
 typedef struct {
     int start;
     int size;
-} FREE_LOCATION;
-
-
-int MEMORY[MAX_MEMORY_WIDTH][MAX_MEMORY_LENGTH];
-int MEMSIZENEWPROCESS = 0;
-int PROCESSBSTROOT = -1;
-int FREEMEMBSTROOT = -1;
-int FREEMEMSIZEBSTROOT = -1;
-int TOTALMEM = MAX_MEMORY_LENGTH * MAX_MEMORY_WIDTH;
-int LARGESTFREEBLOCK = MAX_MEMORY_LENGTH * MAX_MEMORY_WIDTH;
-int ALLOCATEDMEM = 0;
+} FREE_LOCATION;    // free memory block data type
 
 
 int comparePID(void* p1, void* p2)
 {
+    /* Comparison function used in processes BST */
     PROCESS* process1 = (PROCESS*)p1;
     PROCESS* process2 = (PROCESS*)p2;
     if(process1->PID > process2->PID) return 1;
@@ -50,6 +58,7 @@ int comparePID(void* p1, void* p2)
 
 int compareFreeMemFirstFit(void* f1, void* f2)
 {
+    /* Comparison function used in free memory block BST ordered by start position*/
     FREE_LOCATION* a = (FREE_LOCATION*)f1;
     FREE_LOCATION* b = (FREE_LOCATION*)f2;
 
@@ -60,12 +69,12 @@ int compareFreeMemFirstFit(void* f1, void* f2)
 
 int compareFreeMemWorstFitBestFit(void* f1, void* f2)
 {
+    /* Comparison function used in free memory block BST ordered by size*/
     FREE_LOCATION* a = f1;
     FREE_LOCATION* b = f2;
 
     if (a->size != b->size)
         return a->size - b->size;
-
     return a->start - b->start; // tie-breaker
 }
 
@@ -88,6 +97,7 @@ int SearchFirstFit(BST* tree, int root, int size)
 
 void InitMemoryAlloc(void)
 {
+    /* Initially mark all of meory free memory*/
     int row, col;
 
     //memory allocation
@@ -101,17 +111,10 @@ void InitMemoryAlloc(void)
     return;
 }
 
-int SearchFreeMem(BST* free_mem, int size)
-{
-    int idx = SearchFirstFit(free_mem, FREEMEMBSTROOT, size);
-    if (idx == -1) return -1;
-
-    FREE_LOCATION* loc = (FREE_LOCATION*)DATA_AT(free_mem, idx);
-    return loc->start;
-}
-
 int FindLargestFreeMemory(BST* free_mem_by_size)
 {
+    /* to find the largest free memory block and update the value at
+    global variable LARGESTFREEBLOCK */
     int idx = FindMax(free_mem_by_size, FREEMEMSIZEBSTROOT);
     LARGESTFREEBLOCK = ((FREE_LOCATION*)DATA_AT(free_mem_by_size, idx))->size;
     return 0;
@@ -119,6 +122,7 @@ int FindLargestFreeMemory(BST* free_mem_by_size)
 
 void AllocateMmeory(int PID, int start, int size)
 {
+    /* Actual memory allocation */
     for (int i = 0; i < size; i++)
     {
         int index = start + i;
@@ -147,6 +151,7 @@ void DeAllocateMmeory(int start, int size)
 
 int AllocatePID(BST* processes, BST* free_mem, BST* free_mem_by_size, int PID, int size)
 {
+    /* allocate memory for new process*/
     PROCESS process;
 
     int idx = SearchFirstFit(free_mem, FREEMEMBSTROOT, size);
@@ -261,6 +266,7 @@ int DeAllocatePID(BST* processes, BST* free_mem, BST* free_mem_by_size, int PID)
 
 void Display(void)
 {
+    /* for displaying the current memory allocation state*/
     system("clear");
     int row, col, free_mem = TOTALMEM - ALLOCATEDMEM;
     float fragmentation = (1.0-((float)LARGESTFREEBLOCK/free_mem))*100.0;
@@ -275,10 +281,8 @@ void Display(void)
         {
             if(MEMORY[row][col] == -1)
                 printf("*");
-                //printf(ANSI_COLOR_GREEN "*" ANSI_COLOR_RESET );
             else if(MEMORY[row][col] >= 0)
                 printf(ANSI_COLOR_BLUE "*" ANSI_COLOR_RESET );
-                //printf("*");
         }
         printf("\n");
     }
@@ -287,6 +291,7 @@ void Display(void)
 
 void HighlightPID(int PID)
 {
+    /* for highlighting selected process*/
     system("clear");
     int row, col, free_mem = TOTALMEM - ALLOCATEDMEM;
     float fragmentation = (1.0-((float)LARGESTFREEBLOCK/free_mem))*100.0;
@@ -301,12 +306,10 @@ void HighlightPID(int PID)
         {
             if(MEMORY[row][col] == -1)
                 printf("*");
-                //printf(ANSI_COLOR_GREEN "*" ANSI_COLOR_RESET );
             else if(MEMORY[row][col] == PID)
                 printf(ANSI_COLOR_YELLOW "*" ANSI_COLOR_RESET );
             else
                 printf(ANSI_COLOR_BLUE "*" ANSI_COLOR_RESET );
-                //printf("*");
         }
         printf("\n");
     }
@@ -315,18 +318,19 @@ void HighlightPID(int PID)
 
 int Simulate(BST* processes, BST* free_mem, BST* free_mem_by_size, int num, float speed)
 {
+    /* run a simulation of memory allocation de-allocation num no of times*/
     PROCESS temp;
     int pid, pid_to_free_id, size;
 
     srandom((int) time(NULL));
     for (int i = 0; i < num; i++)
     {
+        // randomely allocate memory for new PID
         pid = random() % 1000;
         size = (random() % (100 - 1 + 1)) + 1;
         temp.PID = pid;
         temp.size = size;
         if (Search(processes, PROCESSBSTROOT, &temp) != -1) continue;  // PID already exists → generate a new one;
-        
         
         if(!AllocatePID(processes, free_mem, free_mem_by_size, pid, size))return 0;
         else usleep((int)(600000/speed));
@@ -353,6 +357,7 @@ int Simulate(BST* processes, BST* free_mem, BST* free_mem_by_size, int num, floa
 
 void DisplayPIDs(BST* processes)
 {
+    /* show a list of currently running processes*/
     PROCESS* list_of_processes = (PROCESS*)InorderIterative(processes,PROCESSBSTROOT);
     printf("\v\n");
     printf(ANSI_COLOR_GREEN"PIDs: "ANSI_COLOR_RESET);
@@ -364,61 +369,9 @@ void DisplayPIDs(BST* processes)
     free(list_of_processes);
 }
 
-/*
-int main(void)
-{
-    //PROCESS* processes = NULL;
-    BST processes;
-    BST free_mem, free_mem_by_size;
-    PROCESS pid_to_free;
-    int num = 1000, pid, pid_to_free_id, size;
-    
-
-    InitBST(&processes, sizeof(PROCESS), MAX_PROCESSES, comparePID);
-    InitBST(&free_mem,sizeof(FREE_LOCATION),MAX_FREE_LOCATIONS, compareFreeMemFirstFit);//firstfit mem allocation
-    InitBST(&free_mem_by_size,sizeof(FREE_LOCATION),MAX_FREE_LOCATIONS, compareFreeMemWorstFitBestFit); // map to find largest free mem
-
-    FREE_LOCATION initial;
-    initial.start = 0;
-    initial.size = MAX_MEMORY_WIDTH * MAX_MEMORY_LENGTH;
-    FREEMEMBSTROOT = Insert(&free_mem, FREEMEMBSTROOT, &initial);
-    FREEMEMSIZEBSTROOT = Insert(&free_mem_by_size, FREEMEMSIZEBSTROOT, &initial);
-
-    InitMemoryAlloc();
-    srandom((int) time(NULL));
-    for (int i = 0; i < num; i++) {
-        pid = random() % 1000;
-        size = (random() % (100 - 1 + 1)) + 1;
-        printf("Allocation   PID: %d size: %d MB ",pid, size);
-
-        if(!AllocatePID(&processes,&free_mem, &free_mem_by_size, pid, size)) break;
-        printf("\n");
-        Display();
-        usleep(400000);  // 1,000,000 microseconds = 1 second
- 
-        // randomely delete PID
-        pid_to_free_id = RandomNodePicker(&processes, PROCESSBSTROOT);
-        if (pid_to_free_id != -1)
-        {
-            pid_to_free.PID = ((PROCESS*)DATA_AT(&processes, pid_to_free_id))->PID;
-            pid_to_free.size = ((PROCESS*)DATA_AT(&processes, pid_to_free_id))->size;
-            DeAllocatePID(&processes, &free_mem, &free_mem_by_size, pid_to_free.PID);
-            printf("\n");
-            Display();
-            printf("Deallocation PID: %d size: %d MB\n",pid, size);
-        }
-
-    }
-    printf("\n");
-    //Display();
-
-    return 0;
-}
-*/
 
 int main(void)
 {
-    //PROCESS* processes = NULL;
     BST processes;
     BST free_mem, free_mem_by_size;
     PROCESS temp;
