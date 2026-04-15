@@ -43,6 +43,11 @@ Contains BST.o i.e the result of
 #### src
 Contains the .c files 
 #### bin
-Contains the binary executible files
-
+Contains the binary executible files i.e the results of
+```c
+  gcc obj/BST.o src/first_fit.c -Ilib -o bin/first_fit
+  gcc obj/BST.o src/best_fit.c  -Ilib -o bin/best_fit
+  gcc obj/BST.o src/worst_fit.c -Ilib -o bin/worst_fit
+  gcc obj/BST.o src/paging.c    -Ilib -o bin/paging
+```
 
