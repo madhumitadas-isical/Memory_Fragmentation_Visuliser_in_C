@@ -14,6 +14,7 @@ A simple code to visualise **Memory Fragmentation** (both internal and external)
   gcc obj/BST.o src/paging.c    -Ilib -o bin/paging
 ```
 ## Ececution:
+**N.B** for Best experience run in full screen
 #### External Fragmentation:
 ##### for visulising first fit memory allocation allocation algorithm
 ```c
